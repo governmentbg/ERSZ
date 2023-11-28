@@ -1,0 +1,107 @@
+﻿<script type="text/javascript">
+    $(function () {
+        $('.cdn-files').each(function (i, e) {
+            if (!$(e).attr('id')) {
+                $(e).attr('id', Date.now());
+            }
+            LoadFiles('#'+$(e).attr('id'));
+        });
+    });
+    function LoadFiles(container) {
+        let sourceType = $(container).data('sourcetype');
+        let sourceId = $(container).data('sourceid');
+        let editMode = $(container).data('editmode');
+        let defaultTitle = $(container).data('defaulttitle');
+        let label = 'Прикачени документи';
+        if ($(container).data('label')) {
+            label = $(container).data('label');
+            if (label == 'hidden') {
+                label = undefined;
+            }
+        }
+        let url = '@Url.Action("GetFileList", "Files")';
+        if ($(container).data('url')) {
+            url = $(container).data('url');
+        }
+
+        let data = {
+            sourceType : sourceType,
+            sourceID: sourceId
+            };
+        requestGET_Json(url, data, function (result) {
+            let canAppend = true;
+            let canDelete = true;
+            switch (editMode) {
+                case 'none':
+                    canAppend = false;
+                    canDelete = canAppend;
+                    break;
+                case 'list':
+                    canAppend = true;
+                    canDelete = canAppend;
+                    break;
+                default:
+            }
+            let filesModel = { label: label, canDelete: canDelete, canAppend: canAppend, data: result, container: container, defaultTitle: defaultTitle };
+            $(container).html(TemplateToHtml('#templateFilesList', filesModel));
+        });
+    }
+    function AppendFile(container, defaultTitle) {
+        let sourceType = $(container).data('sourcetype');
+        let sourceId = $(container).data('sourceid');
+        let url = '@Url.Action("UploadFile", "Files")';
+        let data = {
+            sourceType : sourceType,
+            sourceID: sourceId,
+            container: container,
+            defaultTitle: defaultTitle
+        };
+        requestContent(url, data, function (html) {
+            ShowModalDialog("Изберете документ",html);
+        });
+    }
+
+    function DeleteFile(fileID, fileName, container) {
+        let sourceType = $(container).data('sourcetype');
+        let sourceId = $(container).data('sourceid');
+        let url = '@Url.Action("ExpiredFile", "Files")';
+        let data = {
+            cdnFileId: fileID,
+            sourceType : sourceType,
+            sourceId: sourceId,
+        };
+        requestContent(url, data, function (html) {
+            ShowModalDialog("Премахване на файл",html);
+        });
+    }
+</script>
+
+<script id="templateFilesList" type="text/x-handlebars-template">
+    <fieldset class="fs-group">
+        {{#if label}}
+        <legend>
+            {{{label}}}
+        </legend>
+        {{/if}}
+        {{#each this.data}}
+        <div class="row">
+            <div class="col-lg-11">
+                <a class="text-primary" href="@(Url.Action("Download","Files"))/{{this.fileId}}" title="Изтегляне">{{fileTypeName}} \ {{title}}</a>
+            </div>
+            <div class="col-lg-1">
+                {{#if ../canDelete}}
+                <a class="btn btn-sm btn-danger m-b-5" href="#" title="Премахване на документа" onclick="DeleteFile('{{this.fileId}}', '{{this.safeFileName}}', '{{../../container}}'); return false;">
+                    <i class="far fa-trash-alt"></i>
+                </a>
+                {{/if}}
+            </div>
+        </div>
+        {{/each}}
+        {{#if canAppend}}
+        <div>
+            <br />
+            <a class="btn btn-sm btn-success" href="#" title="Изберете документ" onclick="AppendFile('{{this.container}}', '{{this.defaultTitle}}');return false;">Добави нов</a>
+        </div>
+        {{/if}}
+    </fieldset>
+</script>

@@ -1,0 +1,77 @@
+﻿@using ERSZ.Infrastructure.ViewModels.Register
+@model SessionFilterVM
+
+<div id="cmContainer">
+</div>
+
+<script>
+    $(function () {
+        cmLoadData();
+    });
+
+    function cmLoadData() {
+        debugger;
+        requestGET_Json('@Url.Action("GetJurorTimeLineYearMandatesSessionData","Juror")'
+            , { CaseId: @Model.CaseId, Year: @Model.Year, MandateId: @Model.MandateId }
+            , function (data) {
+                $('#cmContainer').html(TemplateToHtml('#sessionTemplate', data))
+            });
+    }
+</script>
+
+<script id="sessionTemplate" type="text/x-handlebars-template">
+    <div class="row">
+            <div class="col-lg-4">
+                <b>Дело: </b> {{this.0.caseLabel}}
+            </div>
+    </div>
+    <hr>
+    {{#each this}}
+        <div class="row">
+            <div class="col-lg-4">
+                <b>Дата: </b> {{date dateStart}}
+            </div>
+            <div class="col-lg-8">
+                <b>Вид: </b> {{sessionKind}}
+            </div>
+    @*<div class="col-lg-3">
+        <b>Статус </b> {{state}}
+        </div>
+        <div class="col-lg-3">
+        <b>Резултат </b> {{result}}
+        </div>*@
+        </div>
+        <div class="row">
+            <div class="col-lg-4">
+                <b>Възнаграждение: </b> {{numberFormat fee}}
+            </div>
+            <div class="col-lg-4">
+                <b>Разходи: </b> {{numberFormat expences}}
+            </div>
+            <div class="col-lg-4">
+                <b>Глоба: </b> {{numberFormat fine}}
+            </div>
+        </div>
+        {{#if acts}}
+            <div class="row">
+                <div class="col-lg-12">
+                    <b>Актове:</b>
+                </div>
+            </div>
+        {{/if}}
+        {{#each acts}}
+            <div class="row">
+                <div class="col-lg-4">
+                    <b>Вид: </b> {{actKind}}
+                </div>
+                <div class="col-lg-4">
+                    <b>Номер: </b> {{regNumber}}
+                </div>
+                <div class="col-lg-4">
+                    <b>Дата: </b> {{date regDate}}
+                </div>
+            </div>
+        {{/each}}
+        <hr>
+    {{/each}}
+</script>

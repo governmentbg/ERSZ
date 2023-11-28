@@ -1,0 +1,236 @@
+﻿@inject ERSZ.Infrastructure.Contracts.IUserContext userContext
+@using ERSZ.Infrastructure.ViewModels.Register
+@model FilterJurorVM
+
+@{
+    ViewData["Title"] = "Съдебни заседатели";
+    var isAuthenticated = User.Identity.IsAuthenticated;
+}
+@*
+    @section breadcrumb{
+    <ol class="breadcrumb">
+    <li><a href="@Url.Action("Index","Home")" title="Начало"><i class="fa fa-home"></i></a></li>
+    <li class="active">@ViewData["Title"]</li>
+    </ol>
+    }*@
+
+@section filter{
+<main class="main-filter">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 col-lg-2">
+                @Html.EditorFor(x => x.FullName)
+            </div>
+            <div class="col-lg-2">
+                @Html.EditorFor(m => m.DistrictId, "GenericDropDown")
+            </div>
+            <div class="col-lg-3">
+                @Html.EditorFor(m => m.CourtTypeId, "GenericDropDown")
+            </div>
+            <div class="col-md-3">
+                @Html.EditorFor(x => x.CourtId,"GenericSelect2")
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-2">
+                @Html.EditorFor(m => m.DateFrom, "DateTime")
+            </div>
+            <div class="col-lg-2">
+                @Html.EditorFor(m => m.DateTo, "DateTime")
+            </div>
+            <div class="col-lg-3">
+                @Html.EditorFor(m => m.ActiveOnly, "GenericDropDown")
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 text-left pb-15">
+                <button type="button" class="btn btn-primary btn-sm" id="btnFilter" onclick="LoadTable()" value="Филтриране" title="Филтриране">
+                    Търси
+                </button>
+            </div>
+        </div>
+    </div>
+</main>
+}
+
+@if (isAuthenticated)
+{
+    if (Model.IsEdit)
+    {
+        <div class="row">
+            <div class="col-md-12 text-right pb-15">
+                <a asp-action="Add" class="btn btn-success btn-sm"><i class="fa fa-plus"></i> Добави</a>
+                <a href="#" onclick="importFromExcel();return false;" class="btn btn-success btn-sm"><i class="fa fa-file-excel"></i> Импорт</a>
+            </div>
+        </div>
+    }
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <table id="jurorMainTable" class="table table-hover table-striped"></table>
+    </div>
+</div>
+
+<script>
+
+
+    $(function () {
+        $('#CourtId').val('@(Model.CourtId)');
+        setTimeout(function(){
+            LoadTable();
+        },500);
+
+    });
+
+        LoadTable = function() {
+            if ($("#DateFrom").val() != '') {
+                if ($("#DateTo").val() == '')
+                    return messageHelper.ShowErrorMessage('Попълнете дата до', messageContainer);
+            }
+
+            if ($("#DateTo").val() != '') {
+                if ($("#DateFrom").val() == '')
+                    return messageHelper.ShowErrorMessage('Попълнете от дата', messageContainer);
+            }
+
+            if ($.fn.dataTable.isDataTable('#jurorMainTable')) {
+                refreshTable('#jurorMainTable');
+            }
+            else{
+
+                $('#jurorMainTable').DataTable({
+                    ajax: {
+                        "url": "@Url.Action("Juror_LoadData", "Juror")",
+                        "type": "POST",
+                        "datatype": "json",
+                        data: function (d) {
+                            d.Uic = $('#Uic').val();
+                            d.FullName = $('#FullName').val();
+                            d.DateFrom = $("#DateFrom").val();
+                            d.DateTo = $("#DateTo").val();
+                            d.AddressCityId = $("#AddressCityId").val();
+                            d.DistrictId = $("#DistrictId").val();
+                            d.CourtId = $("#CourtId").val();
+                            d.CourtTypeId = $("#CourtTypeId").val();
+                            d.ActiveOnly = $("#ActiveOnly").val();
+                            d.IsEdit = "@Model.IsEdit";
+                        }
+                    },
+                    filter: false,
+                    columns: [
+                        {
+                            name: 'fullName',
+                            data: 'fullName',
+                            title: 'Име',
+                            sortable: true,
+                            searchable: true,
+                            "render": function (item, type, row, meta) {
+                                if ('@isAuthenticated' == 'False')
+                                {
+                                    return (row.isActive ? '<b>' + row.fullName + '</b>' : '<b class="text-red">' + row.fullName + '</b>');
+                                }
+
+                                var imgsrc = '';
+                                if (row.content != null)
+                                {
+                                    imgsrc = 'data:image/png;base64,' + row.content; // here data should be in base64 string
+                                }
+                                else
+                                {
+                                    imgsrc = '/img/default_user.png';
+                                }
+
+
+                                return (row.isActive ? '<img src="' + imgsrc + '" height="100px" width="100px" style="object-fit: contain"> <br /> <b>' + row.fullName + '</b>' :
+                                                       '<img src="' + imgsrc + '" height="100px" width="100px" style="object-fit: contain"> <br /> <b class="text-red">' + row.fullName + '</b>');
+                            }
+                        },
+                        //{
+                        //    name: 'fullName',
+                        //    data: 'fullName',
+                        //    title: 'Име',
+                        //    sortable: true,
+                        //    searchable: true,
+                        //    className:'text-bold'
+                        //},
+                        {
+                            name: 'specialities',
+                            data: 'specialities',
+                            title: 'Специалност',
+                            sortable: false,
+                            searchable: true,
+                             "render": function (item, type, row, meta) {
+                                let output="";
+                                $.each(row.specialities, function( index, value ) {
+                                    output += (row.isActive ? "<p>" + value + "</p>" : "<p class='text-red'>" + value + "</p>");
+                                });
+                                return output;
+                            }
+
+                        },
+                        {
+                            name: 'mandates',
+                            data: 'mandates',
+                            title: 'Данни за мандат',
+                            sortable: false,
+                            searchable: true,
+                            "render": function (value) {
+                                  return TemplateToHtml('#templateMandates', value);
+                            }
+                        },
+                        {
+                            name: 'actions',
+                            data: "id",
+                            title: "",
+                            sortable: false,
+                            searchable: false,
+                            className: "text-center noExport",
+                            width:75,
+                            "render": function (value) {
+                                return TemplateToHtml('#jurorEdit', value);
+                            }
+                        }
+                    ]
+                });
+            }
+        };
+
+        function importFromExcel(){
+            requestContent('@Url.Action("ImportFromExcel")',null,function(html){
+                 ShowModalDialog("Импорт на данни за заседатели от Excel ",html);
+            });
+        }
+</script>
+
+<script id="templateMandates" type="text/x-handlebars-template">
+    {{#each this}}
+        <p {{#unless isActiveJuror}}class="text-danger"{{/unless}}{{#if isExpired}}class="text-danger"{{/if}}>{{mandateType}} {{courtLabel}}: {{date dateFrom}} - {{date dateTo}}</p>
+        {{#each this.businessTrip}}
+            <div class="row">
+                    <div class="col-lg-1"></div>
+                    <div class="col-lg-11"><p {{#unless isActiveJuror}}class="text-danger"{{/unless}}{{#if isExpired}} class="text-danger"{{/if}}><i class="fa fa-paper-plane" title="Командироване"></i> {{courtLabel}}: {{date dateFrom}} - {{date dateTo}}</p></div>
+                </div>
+
+        {{/each}}
+    {{/each}}
+</script>
+<script id="jurorEdit" type="text/x-handlebars-template">
+    @if (isAuthenticated && Model.IsEdit)
+    {
+            <a href="@Url.Action("Edit", "Juror")?id={{this}}" class="btn btn-ersz-default btn-sm m-b-5" title="Виж профил"><i class="fa fa-edit"></i><span class="hidden-sm hidden-xs"></span></a>
+    }
+    <a href="@Url.Action("JurorTimeLine", "Juror")?id={{this}}" class="btn btn-ersz-default btn-sm m-b-5" title="Участие в дела"><i class="fa fa-user"></i><span class="hidden-sm hidden-xs"></span></a>
+</script>
+
+
+<script>
+    $(document).ready(function () {
+        $('#CourtTypeId').trigger('change');
+    });
+
+    $('#CourtTypeId').change(function () {
+        requestCombo('@Url.Action("GetDDL_Court", "Juror")', { CourtTypeId: $(this).val() }, '#CourtId', @Model.CourtId, function () { $('#CourtId').trigger('change') });
+    });
+</script>

@@ -1,0 +1,196 @@
+﻿@inject ERSZ.Infrastructure.Contracts.IUserContext userContext
+@using ERSZ.Infrastructure.ViewModels.Register
+@model FilterReportAggregatedDataVM
+
+@{
+    ViewData["Title"] = "Справка с агрегирани данни";
+    var isAuthenticated = User.Identity.IsAuthenticated;
+}
+
+@section filter{
+<main class="main-filter">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 col-lg-4">@Html.EditorFor(x => x.RegNumber)</div>
+            <div class="col-md-6 col-lg-4">@Html.EditorFor(x => x.FullName)</div>
+            <div class="col-md-6 col-lg-4">@Html.EditorFor(x => x.Uic)</div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-3">@Html.EditorFor(x => x.CourtMandateId,"GenericSelect2")</div>
+            <div class="col-md-3">@Html.EditorFor(x => x.CourtKomandirovkaId,"GenericSelect2")</div>
+
+            <div class="col-lg-3">
+                @Html.EditorFor(m => m.DateFrom, "DateTime")
+            </div>
+            <div class="col-lg-3">
+                @Html.EditorFor(m => m.DateTo, "DateTime")
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 col-lg-4">@Html.EditorFor(x => x.SessionKind)</div>
+            <div class="col-md-6 col-lg-4">@Html.EditorFor(x => x.SessionState)</div>
+            <div class="col-md-6 col-lg-4">@Html.EditorFor(x => x.ActKind)</div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 text-left pb-15">
+                <button type="button" class="btn btn-primary btn-sm" id="btnFilter" onclick="LoadTable()" value="Филтриране" title="Филтриране">
+                    Търси
+                </button>
+            </div>
+        </div>
+    </div>
+</main>
+}
+
+<div>
+    <div id="messageContainer">
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <table id="jurorMainTable" class="table table-hover table-striped"></table>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        LoadTable();
+    });
+
+        LoadTable = function() {
+            //if ($("#DateFrom").val() != '') {
+            //    if ($("#DateTo").val() == '')
+            //        return messageHelper.ShowErrorMessage('Попълнете дата до', messageContainer);
+            //}
+
+            //if ($("#DateTo").val() != '') {
+            //    if ($("#DateFrom").val() == '')
+            //        return messageHelper.ShowErrorMessage('Попълнете от дата', messageContainer);
+            //}
+
+            if ($.fn.dataTable.isDataTable('#jurorMainTable')) {
+                refreshTable('#jurorMainTable');
+            }
+            else{
+
+                $('#jurorMainTable').DataTable({
+                    ajax: {
+                        "url": "@Url.Action("ReportAggregatedData_LoadData", "Report")",
+                        "type": "POST",
+                        "datatype": "json",
+                        data: function (d) {
+                            d.DateFrom = $("#DateFrom").val();
+                            d.DateTo = $("#DateTo").val();
+                            d.CourtMandateId = $("#CourtMandateId").val();
+                            d.CourtKomandirovkaId = $("#CourtKomandirovkaId").val();
+                            d.RegNumber = $("#RegNumber").val();
+                            d.FullName = $("#FullName").val();
+                            d.Uic = $("#Uic").val();
+                            d.SessionKind = $("#SessionKind").val();
+                            d.SessionState = $("#SessionState").val();
+                            d.ActKind = $("#ActKind").val();
+                        }
+                    },
+                    filter: false,
+                    columns: [
+                        {
+                            name: 'regNumber',
+                            data: 'regNumber',
+                            title: 'Регистров номер',
+                            sortable: false,
+                            searchable: false,
+                        },
+                        {
+                            name: 'fullName',
+                            data: 'fullName',
+                            title: 'Име на съдебен заседател',
+                            sortable: false,
+                            searchable: false,
+                        },
+                        {
+                            name: 'courtMandateLabel',
+                            data: 'courtMandateLabel',
+                            title: 'Съд на назначаване',
+                            sortable: false,
+                            searchable: false,
+                        },
+                        {
+                            name: 'courtKomandirovkaLabel',
+                            data: 'courtKomandirovkaLabel',
+                            title: 'Съд на командироване',
+                            sortable: false,
+                            searchable: false,
+                        },
+                        {
+                            name: 'dateFrom',
+                            data: 'dateFrom',
+                            title: 'Начална дата на мандат',
+                            sortable: false,
+                            searchable: false,
+                            "render": function (value) {
+                                if (value)
+                                    return moment(value).format("DD.MM.YYYY");
+                                else
+                                    return "";
+                            }
+                        },
+                        {
+                            name: 'dateTo',
+                            data: 'dateTo',
+                            title: 'Крайна дата на мандат',
+                            sortable: false,
+                            searchable: false,
+                            "render": function (value) {
+                                if (value)
+                                    return moment(value).format("DD.MM.YYYY");
+                                else
+                                    return "";
+                            }
+                        },
+                        {
+                            name: 'countCase',
+                            data: 'countCase',
+                            title: 'Брой дела, с реално участие на СЗ',
+                            sortable: false,
+                            searchable: false,
+                        },
+                        {
+                            name: 'countAct',
+                            data: 'countAct',
+                            title: 'Брой постановени актове',
+                            sortable: false,
+                            searchable: false,
+                        },
+                        {
+                            name: 'fee',
+                            data: 'fee',
+                            render: $.fn.dataTable.render.number('', '.', 2),
+                            title: 'Начислени възнаграждения',
+                            sortable: true,
+                            searchable: true
+                        },
+                        {
+                            name: 'expences',
+                            data: 'expences',
+                            render: $.fn.dataTable.render.number('', '.', 2),
+                            title: 'Начислени разходи',
+                            sortable: true,
+                            searchable: true
+                        },
+                        {
+                            name: 'fine',
+                            data: 'fine',
+                            render: $.fn.dataTable.render.number('', '.', 2),
+                            title: 'Наложени глоби',
+                            sortable: true,
+                            searchable: true
+                        },
+                    ]
+                });
+            }
+        };
+</script>

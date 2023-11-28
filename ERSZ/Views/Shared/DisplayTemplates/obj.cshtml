@@ -1,0 +1,8 @@
+﻿@using ERSZ.Infrastructure
+@model object
+<div class="form-group">
+    <label asp-for="@Model" class="control-label"></label>
+    <div>
+        @(Model?.ToString().Decode())
+    </div>
+</div>

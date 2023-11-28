@@ -1,0 +1,63 @@
+﻿@inject ERSZ.Infrastructure.Contracts.IUserContext userContext
+@using ERSZ.Infrastructure.ViewModels.Register
+@model List<JurorTimeLineYearMandateVM>
+
+@if (Model != null && Model.Count() > 0)
+{
+    <div class="row">
+        <b>@Model.FirstOrDefault().MandateLabel</b>
+        <br />
+        @*<b>Общ брой заседания за годината: @Model.Sum(x => x.JurorTimeLineYearMandateDatas.Sum(y => y.CountSession))</b>
+        <br />*@
+    </div>
+    foreach (var mandateVM in Model)
+    {
+        <div class="row">
+            @*<b>@Model.FirstOrDefault().MandateLabel</b>
+            <br />*@
+            <b>Общ брой заседания за @mandateVM.Year: @mandateVM.JurorTimeLineYearMandateDatas.Sum(x => x.CountSession)</b>
+            <br />
+        </div>
+        <div class="row">
+            <div class="timeline">
+                <!-- timeline time label -->
+
+        <div class="time-label">
+                    <span class="btn-timeline-def tl-year" data-year="@mandateVM.Year">@mandateVM.Year</span>
+                </div>
+                @foreach (var jurorTimeLine in mandateVM.JurorTimeLineYearMandateDatas)
+                {
+                    <div class="tl-year-data" data-year="@mandateVM.Year">
+                        @*<i class="fas fa-comments bg-yellow"></i>*@
+                        <div class="timeline-item">
+                            @*<span class="time"><i class="fas fa-clock"></i> 27 mins ago</span>*@
+                            @if (jurorTimeLine.ParentId != null)
+                            {
+                                <h3 class="timeline-header parent-label">@jurorTimeLine.ParentLabel</h3>
+                            }
+                            <h3 class="timeline-header">
+                                @jurorTimeLine.CaseLabel
+                            </h3>
+                            <div class="timeline-body">
+                                @if (User.Identity.IsAuthenticated)
+                                {
+                                    <a style='cursor: pointer;' data-toggle='tooltip' title='Преглед' onclick='GetSession(@jurorTimeLine.CaseId, @jurorTimeLine.Year, @jurorTimeLine.MandateId)'> Брой заседания: @jurorTimeLine.CountSession.ToString()</a>
+                                }
+                                else
+                                {
+                                    @Html.Raw("Брой заседания: " + jurorTimeLine.CountSession.ToString())
+                                    ;
+                                }
+                            </div>
+                            @*<div class="timeline-footer">
+                                <a class="btn btn-warning btn-sm">View comment</a>
+                                </div>*@
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+
+}
