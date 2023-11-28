@@ -1,0 +1,3 @@
+﻿@using ERSZ.Infrastructure.ViewModels.Common
+@model ExpiredInfoVM
+<a href="#" data-modal-title="@Model.DialogTitle" data-modal-url="@Url.Action("ExpiredInfo","Manage",new { id=Model.Id,longId=Model.LongId, returnUrl=Model.ReturnUrl, submitUrl=Model.ExpireSubmitUrl})" class="btn btn-danger modal-loader" title="Премахване"><i class="fa fa-remove"></i></a>

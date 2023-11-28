@@ -1,0 +1,188 @@
+﻿@inject ERSZ.Infrastructure.Contracts.IUserContext userContext
+@using ERSZ.Infrastructure.ViewModels.Register
+@model FilterCourtLocalReportVM
+
+@{
+    ViewData["Title"] = "Локална справка";
+    var isAuthenticated = User.Identity.IsAuthenticated;
+}
+
+@section filter{
+<main class="main-filter">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-3">@Html.EditorFor(m => m.DateFrom, "DateTime")</div>
+            <div class="col-lg-3">@Html.EditorFor(m => m.DateTo, "DateTime")</div>
+        </div>
+        <div class="row">
+            <div class="col-lg-3">@Html.EditorFor(x => x.IsFinished, "GenericDropDownString")</div>
+            <div class="col-lg-3">@Html.EditorFor(x => x.CaseTypeId, "GenericDropDown")</div>
+            <div class="col-lg-3">@Html.EditorFor(x => x.CaseRegNumber)</div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 col-lg-4">@Html.EditorFor(x => x.RegNumber)</div>
+            <div class="col-md-6 col-lg-4">@Html.EditorFor(x => x.FullName)</div>
+            <div class="col-md-6 col-lg-4">@Html.EditorFor(x => x.Uic)</div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 col-lg-4">@Html.EditorFor(x => x.SessionKind)</div>
+            <div class="col-md-6 col-lg-4">@Html.EditorFor(x => x.SessionState)</div>
+            <div class="col-md-6 col-lg-4">@Html.EditorFor(x => x.ActKind)</div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 text-left pb-15">
+                <button type="button" class="btn btn-primary btn-sm" id="btnFilter" onclick="LoadTable()" value="Филтриране" title="Филтриране">
+                    Търси
+                </button>
+            </div>
+        </div>
+    </div>
+</main>
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <table id="jurorMainTable" class="table table-hover table-striped"></table>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        LoadTable();
+    });
+
+        LoadTable = function() {
+            //if ($("#DateFrom").val() != '') {
+            //    if ($("#DateTo").val() == '')
+            //        return messageHelper.ShowErrorMessage('Попълнете дата до', messageContainer);
+            //}
+
+            //if ($("#DateTo").val() != '') {
+            //    if ($("#DateFrom").val() == '')
+            //        return messageHelper.ShowErrorMessage('Попълнете от дата', messageContainer);
+            //}
+
+            if ($.fn.dataTable.isDataTable('#jurorMainTable')) {
+                refreshTable('#jurorMainTable');
+            }
+            else{
+
+                $('#jurorMainTable').DataTable({
+                    ajax: {
+                        "url": "@Url.Action("CourtLocalReport_LoadData", "Report")",
+                        "type": "POST",
+                        "datatype": "json",
+                        data: function (d) {
+                            d.DateFrom = $("#DateFrom").val();
+                            d.DateTo = $("#DateTo").val();
+                            d.CaseTypeId = $("#CaseTypeId").val();
+                            d.CaseRegNumber = $("#CaseRegNumber").val();
+                            d.IsFinished = $("#IsFinished").val();
+                            d.RegNumber = $("#RegNumber").val();
+                            d.FullName = $("#FullName").val();
+                            d.Uic = $("#Uic").val();
+                            d.SessionKind = $("#SessionKind").val();
+                            d.SessionState = $("#SessionState").val();
+                            d.ActKind = $("#ActKind").val();
+                        }
+                    },
+                    filter: false,
+                    columns: [
+                        {
+                            name: 'regNumber',
+                            data: 'regNumber',
+                            title: 'Регистров номер',
+                            sortable: true,
+                        },
+                        {
+                            name: 'mandateNo',
+                            data: 'mandateNo',
+                            title: 'Поредност на мандата',
+                            sortable: true,
+                        },
+                        {
+                            name: 'fullName',
+                            data: 'fullName',
+                            title: 'Име на съдебен заседател',
+                            sortable: false,
+                            searchable: false,
+                        },
+                        {
+                            name: 'specialities',
+                            data: 'specialities',
+                            title: 'Специалност',
+                            sortable: false,
+                            "render": function (items) {
+                                return TemplateToHtml('#templateSpecialities', items);
+                            }
+                        },
+                        {
+                            name: 'mandateDateFrom',
+                            data: 'mandateDateFrom',
+                            title: 'Начална дата на мандат',
+                            sortable: false,
+                            searchable: false,
+                            "render": function (value) {
+                                if (value)
+                                    return moment(value).format("DD.MM.YYYY");
+                                else
+                                    return "";
+                            }
+                        },
+                        {
+                            name: 'mandateDateTo',
+                            data: 'mandateDateTo',
+                            title: 'Крайна дата на мандат',
+                            sortable: false,
+                            searchable: false,
+                            "render": function (value) {
+                                if (value)
+                                    return moment(value).format("DD.MM.YYYY");
+                                else
+                                    return "";
+                            }
+                        },
+                        {
+                            name: 'caseType',
+                            data: 'caseType',
+                            title: 'Вид дело',
+                            sortable: true,
+                        },
+                        {
+                            name: 'caseRegNumber',
+                            data: 'caseRegNumber',
+                            title: 'Номер дело',
+                            sortable: true,
+                        },
+                        {
+                            name: 'sessionLabel',
+                            data: 'sessionLabel',
+                            title: 'Вид заседание/дата',
+                            sortable: true,
+                        },
+                        {
+                            name: 'sessionActs',
+                            data: 'sessionActs',
+                            title: 'Вид постановен акт, номер, дата',
+                            sortable: false,
+                            "render": function (items) {
+                                return TemplateToHtml('#templateActs', items);
+                            }
+                        },
+                    ]
+                });
+            }
+        };
+</script>
+
+
+<script id="templateSpecialities" type="text/x-handlebars-template">
+    {{#each this}}
+    <div>{{this}}</div>
+    {{/each}}
+</script>
+<script id="templateActs" type="text/x-handlebars-template">
+    {{#each this}}
+    <div>{{this}}</div>
+    {{/each}}
+</script>

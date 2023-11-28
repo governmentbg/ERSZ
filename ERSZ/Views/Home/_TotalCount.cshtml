@@ -1,0 +1,31 @@
+﻿@using ERSZ.Core.Models
+@model List<CourtTypeModel>
+<div class="container container--infoboxes">
+    <div class="row justify-content-center">
+        <div class="col-auto">
+            <p class="title--big text-center">@Model.Sum(x=>x.JurorCount) съдебни заседатели</p>
+        </div>
+    </div>
+
+    <div class="row row--boxes justify-content-center">
+        @foreach (var item in @Model)
+        {
+            <div class="col-lg-3 col-md-12">
+            <div class="small-box @item.CssClass">
+                <div class="inner">
+                    <span class="number">@item.JurorCount</span><span class="info">СЪДЕБНИ ЗАСЕДАТЕЛИ</span>
+                    <p class="title_info">@item.CourtLabel</p>
+                </div>
+                <!-- <div class="icon">
+                    <i class="ion ion-stats-bars"></i>
+                </div> -->
+                <a href="@Url.Action("Index", "Juror",new{courtTypeId = item.CourtTypeId})" class="small-box-footer">
+                    Виж повече
+                </a>
+            </div>
+        </div>
+
+        }
+        
+    </div>
+</div>

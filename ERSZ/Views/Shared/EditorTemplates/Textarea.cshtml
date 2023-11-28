@@ -1,0 +1,12 @@
+﻿@model string
+@using ERSZ.Infrastructure
+@using ERSZ.Infrastructure.Extensions
+@{
+    string _class = (string)ViewData["class"] ?? "";
+    string _rows = (string)ViewData["rows"] ?? "2";
+}
+<div class="form-group">
+    <label asp-for="@Model" class="control-label"></label>
+    @Html.TextArea("", Model.Decode(), new { @class = "form-control "+ _class, rows = _rows })
+    <span asp-validation-for="@Model" class="text-danger"></span>
+</div>

@@ -1,0 +1,112 @@
+﻿@inject ERSZ.Infrastructure.Contracts.IUserContext userContext
+@using ERSZ.Infrastructure.Constants
+@using Microsoft.Extensions.Configuration
+<div class="menu">
+    <div class="container">
+        <div class="row align-items-center justify-content-between">
+            <div class="col">
+                <div class="row row--menu justify-content-start">
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <div class="col-auto show-on-mobile">
+                            <a href="#" class="login menu_item">
+                                <p class="names">@(userContext.FullName)</p>
+                                @if (!string.IsNullOrEmpty(userContext.CourtName))
+                                {
+                                    <p class="info">@(userContext.CourtName)</p>
+                                }
+                            </a>
+                            <text>&nbsp;</text>
+                            <a href="#" onclick="logOff();" class="login menu_item">
+                                <p class="names">
+                                    Изход
+                                </p>
+                            </a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="col-auto show-on-mobile">
+
+                            <a href="@Url.Action("Login","Account")" class="header_login menu_item">
+                                <span>ВХОД С КЕП</span>
+                            </a>
+                        </div>
+                    }
+
+
+
+
+                    <div class="col-auto show-on-mobile"><a href="#" class="menu_item">Профил</a></div>
+                    <div class="col-auto"><a href="#" class="menu_item">За регистъра</a></div>
+                    <div class="col-auto"><a href="@Url.Action("Index","Juror")" class="menu_item">Регистър</a></div>
+                    @if (userContext.IsUserInRole(NomenclatureConstants.Roles.Report))
+                    {
+                        @*<div class="col-auto"><a href="#" class="menu_item">Справки</a></div>*@
+
+                        <div class="col-auto menu_item--toggable">
+                            <a href="#" class="menu_item">Справки</a>
+                            <ul class="menu_item--list big">
+                                <li><a href="@Url.Action("IndexReportAggregatedData","Report")" class="menu_item">Справка с агрегирани данни</a></li>
+                                <li><a href="@Url.Action("ReportFullData","Report")" class="menu_item">Справка по заседания</a></li>
+                                @*                                <li><a href="@Url.Action("IndexCourtLocalReport","Report")" class="menu_item">Локална справка</a></li>*@
+                            </ul>
+                        </div>
+                    }
+
+                    <div class="col-auto">
+                        <a href="#" class="menu_item">Помощ</a>
+                    </div>
+
+                    @if (userContext.IsUserInRole(NomenclatureConstants.Roles.Admin) ||
+                    userContext.IsUserInRole(NomenclatureConstants.Roles.Register))
+                    {
+                        <div class="col-auto menu_item--toggable">
+                            <a href="#" class="menu_item">Администриране</a>
+                            <ul class="menu_item--list">
+                                @if (userContext.IsUserInRole(NomenclatureConstants.Roles.Register))
+                                {
+                                    <li><a href="@Url.Action("Index","Juror", new { isEdit = true })" class="menu_item">Заседатели</a></li>
+                                }
+                                @if (userContext.IsUserInRole(NomenclatureConstants.Roles.Admin))
+                                {
+                                    <li><a href="@Url.Action("Index","Account")" class="menu_item">Потребители</a></li>
+                                }
+                                @if (userContext.IsUserInRole(NomenclatureConstants.Roles.GlobalAdmin))
+                                {
+                                    <li><a href="@Url.Action("AuditLog","Account")" class="menu_item">Журнал</a></li>
+                                }
+                            </ul>
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="col-auto col--aside d-none; d-sm-none; d-md-none; d-lg-none; d-xl-block;">
+                <div class="search d-flex align-items-center">
+
+                    <div class="menu--open">
+                        <p class="menu--open__title">меню</p>
+                    </div>
+                    <form asp-action="Index" asp-controller="Juror" method="get">
+                        <input id="search" name="search" type="text" class="header__search hide-on-mobile" placeholder="Търсене на съдебен заседател" />
+                        <submit class="btn icon_magnifier"></submit>
+                    </form>
+
+                    <button type="button" class="btn btn--menu-toggle">
+                        <img class="hamburger" src="/css/images/Vector(2).svg" alt="">
+                        <img class="close" src="/css/images/Vector(3).svg" alt="">
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var headerMenuToggle = document.querySelector('.header .btn--menu-toggle');
+    headerMenuToggle.addEventListener('click', function() {
+    var headerMenuContainer = document.querySelector('.header .menu');
+                   headerMenuContainer.classList.toggle('active');
+                   document.body.classList.toggle('fixed');
+    });
+
+</script>
