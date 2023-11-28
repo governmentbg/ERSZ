@@ -361,3 +361,21 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# certificates
+*.crt
+*.cer
+*.der
+*.p12
+*.pem
+*.pfx
+*.key
+*.keystore
+
+# SQL scripts
+*.sql
+
+# Configuration files
+appsettings.json
+appsettings.*.json
+Web.config
