@@ -1,0 +1,36 @@
+﻿@using ERSZ.Infrastructure.ViewModels.Common
+@model ExpiredInfoVM
+@{
+    ViewData["Title"] = "Премахване на файл";
+}
+
+<form id="frmExpiredFile" action="@Url.Action("ExpiredFile_Save", "Files")" onsubmit="validationCheck(event);" method="post" enctype="multipart/form-data">
+    @Html.HiddenFor(x => x.Id)
+    @Html.HiddenFor(x => x.LongId)
+    @Html.HiddenFor(x => x.StringId)
+    @Html.HiddenFor(x => x.FileContainerName)
+    @Html.HiddenFor(x => x.ExpireSubmitUrl)
+    @Html.HiddenFor(x => x.ReturnUrl)
+    @Html.HiddenFor(x => x.SourceId)
+    @Html.HiddenFor(x => x.SourceType)
+    @Html.EditorFor(x => x.ExpiredDescription, "Textarea")
+    <input type="submit" value="Премахване" onclick="validationCheck(event);" class="btn btn-danger" />
+</form>
+
+<div id="modalMessageContainer">
+</div>
+
+<script>
+    function validationCheck(e) {
+        debugger;
+        if ($('#ExpiredDescription').val().length < 5) {
+            $('#modalMessageContainer').html('Моля, въведете Причина за премахването по-дълга от 5 символа');
+            //swalOk('Моля, въведете Причина за премахването');
+            e.preventDefault();
+            $(e.target).find('input[type="submit"]').removeAttr('disabled');
+            return false;
+        };
+
+        return true;
+    }
+</script>

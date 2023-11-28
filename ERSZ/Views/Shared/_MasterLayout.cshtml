@@ -1,0 +1,131 @@
+﻿@inject ERSZ.Infrastructure.Contracts.IUserContext userContext
+@using Microsoft.Extensions.Configuration
+@{
+    var appVersion = System.Reflection.Assembly.GetEntryAssembly().GetName().Version;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>@ViewData["Title"]</title>
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <!-- <link rel="manifest" href="/assets/icons/manifest.json"> -->
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="/assets/icons/ms-icon-144x144.png">
+    <meta name="theme-color" content="#ffffff">
+    <script type="text/javascript">
+          var rootDir = '@Url.Content("~/")';
+          window.paceOptions = {
+            ajax: {
+                ignoreURLs: ['visualstudio.com', 'browserLink', 'aspnetcore-browser-refresh', 'browserLinkSignalR', 'ws:', 'wss:'],
+                trackWebSockets: true
+            }
+        };
+        function logOff() {
+             let _url = '@Url.Action("LogOff","Account")';
+
+             $.post(_url, null)
+                 .done(function (result) {
+                         if (result === 'ok') {
+                             window.location.href = '@Url.Action("Index", "Home")';
+                         }
+                         else {
+                             console.log("Неуспешно излизане");
+                         }
+                     })
+                 .fail(function (error) {
+                     console.log("Грешка: Неуспешно излизане."+error);
+                     })
+                 .always();
+         }
+
+    </script>
+    <link rel="stylesheet" href="/css/prod-site.min.css" />
+    <script src="/js/prod/head.min.js" type="text/javascript"></script>
+    @RenderSection("head", required: false)
+</head>
+<body>
+    <header class="header">
+        <div class="bg-white">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <a href="@Url.Action("Index","Home")" title="Начало" class="logo-link">
+                            <div class="logo d-flex align-items-center">
+                                <img src="/css/images/BG-GERB-FULL-BLK-1C-VE-COMPRESSED.svg" alt="">
+                                <div class="texts">
+                                    <p class="logo-title">ЕДИНЕН РЕГИСТЪР НА СЪДЕБНИТЕ ЗАСЕДАТЕЛИ</p>
+                                    <p class="logo-bg">РЕПУБЛИКА БЪЛГАРИЯ</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col align-self-end">
+                        <div class="aside text-right">
+                            <div class="login d-flex justify-content-end ">
+                                @if (User.Identity.IsAuthenticated)
+                                {
+                                    <a href="#" class="login hide-on-mobile align-items-end">
+                                        <p class="names">@(userContext.FullName)</p>
+                                        @if (!string.IsNullOrEmpty(userContext.CourtName))
+                                        {
+                                            <p class="info">@(userContext.CourtName)</p>
+                                        }
+                                    </a>
+                                    <text>&nbsp;</text>
+                                    <a href="#" onclick="logOff();" title="Изход" class="def-color hide-on-mobile"><i class="fas fa-sign-out-alt"></i></a>
+                                }
+                                else
+                                {
+                                    <a href="@Url.Action("Login","Account")" class="d-flex header_login align-items-end hide-on-mobile">
+                                        <div class="icon_kep d-none d-sm-block"></div>
+                                        <span>ВХОД С КЕП</span>
+                                    </a>
+                                }
+                            </div>                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @await Component.InvokeAsync(nameof(ERSZ.Components.MainMenuComponent),new {template="Horizontal"})
+    </header>
+
+    @RenderBody()
+
+    <footer class="footer">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-auto footer_left">
+                    <div class="logo--eu">
+                        <img src="/css/images/EU_logo.svg" alt="">
+                    </div>
+                </div>
+                <div class="col text-center footer_info_text">
+                    <span>
+                        Проект № BG05SFOP001-3.007-0001 „Осигуряване на реално обществено участие в правораздаването чрез института
+                        на съдебните заседатели“. Проектът се финансира от Оперативна програма „Добро управление” 2014-2020,
+                        съфинансирана от Европейския съюз чрез Европейския социален фонд.
+                    </span>
+                </div>
+                <div class="col-auto footer_right">
+                    <div class="logo--right">
+                        <img src="/css/images/Dobroupravlenie_logo.svg" alt="">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <script src="~/js/prod/site.min.js"></script>
+    @{
+        await Html.RenderPartialAsync("_ModalDialog");
+        await Html.RenderPartialAsync("_UserMessages");
+    }
+    @RenderSection("scripts", required: false)
+</body>
+</html>
+

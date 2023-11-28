@@ -1,0 +1,10 @@
+﻿@{
+    Layout = "~/Views/Shared/_MasterLayout.cshtml";
+}
+<main class="main">
+    @RenderBody()
+</main>
+
+@section scripts{
+    @RenderSection("scripts", required: false)
+}

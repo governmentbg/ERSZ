@@ -1,0 +1,15 @@
+﻿@{
+    Layout = "~/Views/Shared/_MasterLayout.cshtml";
+}
+
+@RenderSection("filter", required: false)
+
+<main class="main int-main">
+    <div class="container">
+        @RenderBody()
+    </div>
+</main>
+
+@section scripts{
+    @RenderSection("scripts", required: false)
+}

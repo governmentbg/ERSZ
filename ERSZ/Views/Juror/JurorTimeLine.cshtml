@@ -1,0 +1,119 @@
+﻿@inject ERSZ.Infrastructure.Contracts.IUserContext userContext
+@using ERSZ.Infrastructure
+@using ERSZ.Infrastructure.ViewModels.Register
+@model JurorTimeLineVM
+
+@{
+    ViewData["Title"] = "Участие в дела";
+    string avatar = (Model.Content == null || !(Model?.Content).Any()) ? Url.Content("~/img/default_user.png") : $"data:image/png;base64,{Convert.ToBase64String(Model.Content)}";
+}
+
+<div class="row">
+    <div class="col-lg-12 col-md-12">
+        <form asp-action="Edit" method="post">
+            @Html.HiddenFor(x => x.Id)
+
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div id="saveContainer">
+                <partial name="_SaveFormContent" model="@("#saveContainer")" />
+
+                <div class="row">
+                    <div class="col-md-3">
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <img class="center img-circle elevation-2" src="@avatar" width="200" height="200" style="object-fit: contain">
+                            <br />
+                            <br />
+                        }
+                        <div class="row">
+                            <b>@Model.FullName.Decode()</b>
+                        </div>
+                        <div class="row">
+                            Съдебен заседател
+                        </div>
+                        <br />
+                        <div class="row">
+                            <i class="fa fa-map-marker"></i>&nbsp;@Model.CityLabel
+                        </div>
+                        <hr />
+                        <b>Образование</b>
+                        <br />
+                        @Model.EducationLabel
+                        <hr />
+                        <b>Образователно кв. степен</b>
+                        <br />
+                        @Model.EducationRangLabel
+                        <hr />
+                        <b>Специалност</b>
+                        <br />
+                        @foreach (var item in Model.Specialities)
+                        {
+                            @Html.Raw(item)
+                            ;
+                            @Html.Raw("<br />")
+                            ;
+                        }
+                        <hr />
+
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <b>ЕГН</b>
+                            <br />
+                            @Model.Uic
+                            <hr />
+                            <b>Адрес</b>
+                            <br />
+                            @Model.AddressText.Decode()
+                            <hr />
+                            <b>Телефонен номер</b>
+                            <br />
+                            @Model.Phone
+                            <hr />
+                            <b>Електронна поща</b>
+                            <br />
+                            @Model.EMail
+                            <hr />
+                        }
+                    </div>
+                    <div class="col-md-9">
+                        @foreach (var mandate in Model.Mandates.OrderBy(x => x.Id))
+                        {
+                            @Html.Raw("<a href='#' class='btn btn-xs btn-mandate-select' onclick='GetJurorTimeLineYearMandates(" + mandate.Id + ",this); return false;'><i class='fa fa-balance-scale'></i> " + mandate.CourtLabel + "</a>")
+                        }
+                        <hr />
+
+                        <div class="row">
+                            <div class="col-md-4" id="divData">
+                            </div>
+                            <div class="col-md-8" id="divDataSession">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $(document).on('click','span.tl-year',function(){
+        let year = $(this).data('year');
+        $('div.tl-year-data[data-year="'+year+'"]').toggle();
+        });
+    });
+
+    function GetJurorTimeLineYearMandates(id,sender) {
+        $('.btn-mandate-select').removeClass('btn-ersz-default');
+        $(sender).addClass('btn-ersz-default');
+        let url = '@Url.Action("GetJurorTimeLineYearMandates","Juror")';
+        $('#divDataSession').html(null);
+        requestContent(url, { id:id }, function (html) { $('#divData').html(html); });
+    }
+
+    function GetSession(caseId, year, mandateid) {
+                let url = '@Url.Action("GetJurorTimeLineYearMandatesSessionDataPartial","Juror")';
+                requestContent(url, { CaseId: caseId, Year: year, MandateId: mandateid }, function (html) { $('#divDataSession').html(html); });
+    }
+</script>

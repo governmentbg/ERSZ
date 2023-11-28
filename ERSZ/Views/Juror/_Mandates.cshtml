@@ -1,0 +1,84 @@
+﻿@using ERSZ.Infrastructure.Constants
+@model string
+@{
+    ViewData["Title"] = "Мандати";
+}
+
+<div class="row">
+    <div class="col-md-12 text-right pb-15">
+        <a asp-action="Add" asp-controller="Mandate" asp-route-jurorId="@Model" class="btn btn-success btn-sm">
+            <i class="fa fa-plus"></i>
+            Добави
+        </a>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <table id="jurorMainTable" class="table table-hover table-striped"></table>
+    </div>
+</div>
+
+<script>
+
+       $(function () {
+             LoadTable();
+        });
+
+    LoadTable = function() {
+         $('#jurorMainTable').DataTable({
+                ajax: {
+                    "url": "@Url.Action("Juror_LoadMandates", "Juror",new {jurorId=@Model})",
+                    "type": "POST",
+                    "datatype": "json",
+                    data: function (d) {
+                    }
+                },
+                filter: false,
+                buttons:[],
+                columns: [
+                     {
+                        name: 'dateFrom',
+                        data: 'dateFrom',
+                        title: 'Информация',
+                        sortable: false,
+                        searchable: false,
+                         "render": function (a,b,item,c) {
+                            return TemplateToHtml('#templateInfo', item);
+                        }
+                    },
+                    {
+                        name: 'actions',
+                        data: "id",
+                        title: "",
+                        sortable: false,
+                        searchable: false,
+                        className: "text-left noExport",
+                        width:80,
+                        "render": function (a,b,item,c) {
+                            return TemplateToHtml('#mandateEdit', item);
+                        }
+                    }
+                ]
+            });
+    };
+
+</script>
+<script id="templateInfo" type="text/x-handlebars-template">
+    {{#if isDateTermination}}
+        <span class="text-red">
+            <i class="fa fa-exclamation fa-lg" title="Предсрочно прекратен мандат на {{date dateTermination}}"></i>
+        </span>
+    {{/if}}
+    <b>{{courtLabel}}</b>
+    <br/>
+    {{mandateTypeNo}} 
+    <br/>
+    {{date dateFrom}} - {{date dateTo}}
+</script>
+
+<script id="mandateEdit" type="text/x-handlebars-template">
+    <a href="@Url.Action("Edit", "Mandate")/{{id}}" class="btn btn-warning btn-sm" title="Редакция"><i class="fa fa-edit"></i></a>
+    {{#if isMandate}}
+        <a href="@Url.Action("Add", "Mandate")?jurorId={{jurorId}}&mandateId={{id}}" class="btn btn-primary btn-sm" title="Командироване"><i class="fa fa-paper-plane"></i></a>
+    {{/if}}
+</script>

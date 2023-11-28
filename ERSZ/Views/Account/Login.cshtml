@@ -1,0 +1,61 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using ERSZ.Core.Models.Identity
+@using ERSZ.Infrastructure.Data.Models.Identity
+
+@inject SignInManager<ApplicationUser> SignInManager
+@model LoginVM
+@{
+    Layout = "~/Views/Shared/_MasterLayout.cshtml";
+    ViewData["Title"] = "ЕРСЗ | Вход";
+    ViewData["menu"] = "login";
+}
+
+@section head{
+<style>
+    .btn-login {
+        color: #173454;
+        background-color: #fff;
+        border-color: #aaa;
+        box-shadow: none;
+        font-weight: bolder;
+    }
+
+        .btn-login:hover {
+            color: #2f5e94;
+        }
+
+</style>
+}
+<main class="main">
+    <div class="container container--infoboxes">
+
+        <div class="row justify-content-center"  style="padding-top:100px;">
+            <div class="col-12">
+                <p class="title--big text-center">Единен регистър на съдебните заседатели</p>
+            </div>
+            <div class="col-12 text-center">
+                <form id="external-account" asp-action="ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-validate">
+                    <div class="">
+                        @foreach (var provider in Model.ExternalLogins)
+                        {
+
+                            <button type="submit" class="btn btn-login" name="provider" value="@provider.Name">ВХОД С @provider.DisplayName.ToUpper()</button>
+
+                        }
+                        @if (ViewBag.errorMessage != null)
+                        {
+                            <div class="text-danger">
+                                @ViewBag.errorMessage
+                            </div>
+                        }
+                    </div>
+                </form>               
+            </div>
+            @*<div class="col-lg-9 col-md-12 text">
+                <p>Достъпът до електорнния регистър на съдебните заседатели се определя по ред, определен от ВСС.</p>
+            </div>*@
+        </div>
+    </div>
+</main>
+
+

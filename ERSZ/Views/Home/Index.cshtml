@@ -1,0 +1,9 @@
+﻿@using ERSZ.Core.Models
+@{
+    ViewData["Title"] = "Начало";
+    Layout = "~/Views/Shared/_LayoutBlue.cshtml";
+    var modelList = ViewBag.CourtTypeList as List<CourtTypeModel>;
+}
+<partial name="_TotalCount" model=modelList/>
+<partial name="_Map" />
+

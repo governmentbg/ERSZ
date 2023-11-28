@@ -1,0 +1,44 @@
+﻿<form action="@Url.Action("ImportFromExcel", "Juror")" id="frmImport" method="post" enctype="multipart/form-data">
+    <input type="file" name="files" id="files" />
+    <br />
+    <span class="text-muted">Изберете Excel файл, съдържащ данни за заседатели в указания формат</span>
+    <br />
+
+    <br />
+    <input type="submit" value="Импортирай" id="btnImport" class="btn btn-success" />
+    <div class="float-right">
+        <a href="@Url.Content("~/documents/jurors-import.xlsx")">Изтегли примерен файл.</a>
+    </div>
+    &nbsp;
+    <span id="uploadProgress"></span>
+</form>
+
+<script>
+    $(function () {
+        $('form#frmImport').ajaxForm({
+            beforeSend: function () {
+                $('#btnImport').hide();
+                $('#uploadProgress').text('');
+            },
+
+            uploadProgress: function (event, position, total, percentComplete) {
+                var percentVal = 'Моля, изчакайте... ' + percentComplete + '%';
+                $('#uploadProgress').text(percentVal);
+            },
+            complete: function (xhr) {
+                $('#btnImport').show();
+                $('#uploadProgress').text('');
+                switch (xhr.responseJSON.isSuccessfull) {
+                    case true:
+                        LoadTable();
+                        $('#btnImport').parents('div.modal:first').modal("hide");
+                        messageHelper.ShowSuccessMessage(xhr.responseJSON.errorMessage);
+                        break;
+                    default:
+                        swalOk(xhr.responseJSON.errorMessage);
+                        break;
+                }
+            }
+        });
+    });
+</script>
